@@ -110,26 +110,6 @@ button.primary{
 .kpi .t{font-size:11px;color:var(--muted);margin-bottom:8px}
 .kpi .v{font-size:24px;font-weight:630;letter-spacing:-.026em;word-break:break-word}
 .kpi .u{font-size:11px;color:var(--muted)}
-.kpiHead{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  margin-bottom:6px;
-}
-.kpiIcon{
-  width:24px;
-  height:24px;
-  border-radius:8px;
-  background:#ffffff;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  color:#4b5563;
-}
-.kpiIcon svg{
-  width:14px;
-  height:14px;
-}
 .kpi .row{
   margin-top:8px;
   display:flex;
@@ -161,25 +141,6 @@ button.primary{
   justify-content:space-between;
   align-items:center;
   gap:8px;
-}
-.titleWithIcon{
-  display:flex;
-  align-items:center;
-  gap:8px;
-}
-.miniIcon{
-  width:22px;
-  height:22px;
-  border-radius:7px;
-  background:#ffffff;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  color:#6b7280;
-}
-.miniIcon svg{
-  width:13px;
-  height:13px;
 }
 .mini b{font-size:11px}
 .mini span{font-size:11px;color:var(--muted)}
