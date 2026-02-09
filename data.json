@@ -1,0 +1,98 @@
+{
+  "years": [2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030, 2031, 2032],
+  "defaultYearFrom": 2026,
+  "defaultYearTo": 2028,
+  "baseInputs": {
+    "s1": 1450000,
+    "s2": 580000,
+    "s3": 3100000,
+    "production": 6200000,
+    "target": 4300000
+  },
+  "trendBaseTotalByYear": {
+    "2023": 5450000,
+    "2024": 5320000,
+    "2025": 5200000,
+    "2026": 5130000,
+    "2027": 5050000,
+    "2028": 4960000,
+    "2029": 4880000,
+    "2030": 4800000,
+    "2031": 4720000,
+    "2032": 4650000
+  },
+  "factors": [
+    {"id":"flare", "name":"Flaring Reduction Program", "group":"ops", "min":-220000, "max":120000, "value":0, "hint":"flare gas management"},
+    {"id":"boiler", "name":"Boiler Efficiency Upgrade", "group":"ops", "min":-180000, "max":90000, "value":0, "hint":"combustion efficiency"},
+    {"id":"steam", "name":"Steam System Loss", "group":"energy", "min":-60000, "max":150000, "value":0, "hint":"positive means higher losses"},
+    {"id":"renewable", "name":"Renewable Electricity Share", "group":"energy", "min":-260000, "max":50000, "value":0, "hint":"REC/PPA coverage"},
+    {"id":"gridef", "name":"Grid Emission Factor Shift", "group":"energy", "min":-110000, "max":110000, "value":0, "hint":"grid factor movement"},
+    {"id":"feedmix", "name":"Low-carbon Feedstock Mix", "group":"supply", "min":-200000, "max":120000, "value":0, "hint":"bio/recycled share"},
+    {"id":"logi", "name":"Logistics Optimization", "group":"supply", "min":-130000, "max":50000, "value":0, "hint":"route/mode shift"},
+    {"id":"cbam", "name":"CBAM / Policy Pass-through", "group":"policy", "min":-70000, "max":150000, "value":0, "hint":"policy response"},
+    {"id":"methane", "name":"Methane Leak Program", "group":"project", "min":-190000, "max":40000, "value":0, "hint":"LDAR maturity"},
+    {"id":"ccus", "name":"CCUS Ramp-up", "group":"project", "min":-320000, "max":20000, "value":0, "hint":"capture and storage"}
+  ],
+  "presets": {
+    "base": {
+      "label": "Scenario: Base",
+      "factors": {
+        "flare": 0,
+        "boiler": 0,
+        "steam": 0,
+        "renewable": 0,
+        "gridef": 0,
+        "feedmix": 0,
+        "logi": 0,
+        "cbam": 0,
+        "methane": 0,
+        "ccus": 0
+      }
+    },
+    "compliance": {
+      "label": "Scenario: Compliance",
+      "factors": {
+        "flare": -70000,
+        "boiler": -50000,
+        "steam": 15000,
+        "renewable": -90000,
+        "gridef": -25000,
+        "feedmix": -40000,
+        "logi": -25000,
+        "cbam": 20000,
+        "methane": -45000,
+        "ccus": -50000
+      }
+    },
+    "accelerated": {
+      "label": "Scenario: Accelerated",
+      "factors": {
+        "flare": -120000,
+        "boiler": -85000,
+        "steam": -10000,
+        "renewable": -170000,
+        "gridef": -45000,
+        "feedmix": -110000,
+        "logi": -60000,
+        "cbam": 10000,
+        "methane": -120000,
+        "ccus": -180000
+      }
+    },
+    "stress": {
+      "label": "Scenario: Stress",
+      "factors": {
+        "flare": 40000,
+        "boiler": 25000,
+        "steam": 90000,
+        "renewable": -30000,
+        "gridef": 55000,
+        "feedmix": 70000,
+        "logi": 35000,
+        "cbam": 90000,
+        "methane": 15000,
+        "ccus": -20000
+      }
+    }
+  }
+}
