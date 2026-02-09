@@ -1,0 +1,711 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>IRPC GHG Dashboard</title>
+  <style>
+    :root{
+      --bg:#f5f5f7;
+      --card:#ffffff;
+      --text:#1d1d1f;
+      --muted:#6e6e73;
+      --line:#ececf0;
+      --accent:#0071e3;
+      --good:#1d8f4e;
+      --bad:#c93b33;
+      --radius:20px;
+      --shadow:0 10px 30px rgba(0,0,0,.04);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family:"SF Pro Text","SF Pro Display","Helvetica Neue",-apple-system,BlinkMacSystemFont,sans-serif;
+      line-height:1.45;
+    }
+    .wrap{max-width:1240px;margin:0 auto;padding:32px 20px 64px}
+    header{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:20px;
+      background:var(--card);
+      border:0;
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:24px;
+    }
+    h1{margin:0;font-size:26px;font-weight:640;letter-spacing:-.018em;line-height:1.12}
+    .sub{margin:10px 0 0;color:var(--muted);font-size:13px;max-width:62ch}
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      font-size:11px;
+      color:var(--muted);
+      border:0;
+      border-radius:999px;
+      padding:6px 10px;
+      background:#f2f2f7;
+    }
+    .filters{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      justify-content:flex-end;
+    }
+    select,input[type="text"],input[type="number"],button{
+      border:0;
+      border-radius:12px;
+      padding:10px 12px;
+      font-size:12px;
+      background:#f2f2f7;
+      color:var(--text);
+      outline:none;
+    }
+    select:focus,input[type="text"]:focus,input[type="number"]:focus,button:focus{
+      box-shadow:0 0 0 3px rgba(0,113,227,.16);
+    }
+    button{cursor:pointer}
+    button.primary{
+      background:var(--accent);
+      color:#fff;
+      border-color:var(--accent);
+    }
+    .grid{
+      display:grid;
+      grid-template-columns:1.2fr .8fr;
+      gap:16px;
+      margin-top:16px;
+    }
+    @media (max-width:980px){.grid{grid-template-columns:1fr}}
+    .card{
+      background:var(--card);
+      border:0;
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .hd{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:8px;
+      padding:16px 20px 12px;
+    }
+    .hd h2{margin:0;font-size:13px;font-weight:600;letter-spacing:-.01em}
+    .hint{font-size:11px;color:var(--muted)}
+    .bd{padding:12px 20px 20px}
+    .kpis{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:12px;
+    }
+    @media (max-width:980px){.kpis{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width:640px){.kpis{grid-template-columns:1fr}}
+    .kpi{
+      border:0;
+      border-radius:16px;
+      padding:14px;
+      background:#f7f7fa;
+    }
+    .kpi .t{font-size:11px;color:var(--muted);margin-bottom:8px}
+    .kpi .v{font-size:24px;font-weight:630;letter-spacing:-.026em}
+    .kpi .u{font-size:11px;color:var(--muted)}
+    .kpi .row{
+      margin-top:8px;
+      display:flex;
+      justify-content:space-between;
+      gap:8px;
+      font-size:11px;
+      color:var(--muted);
+    }
+    .delta{
+      margin-top:10px;
+      display:inline-flex;
+      border:0;
+      border-radius:999px;
+      font-size:11px;
+      padding:6px 10px;
+      background:#fff;
+    }
+    .delta.good{border-color:rgba(29,143,78,.35);color:var(--good)}
+    .delta.bad{border-color:rgba(201,59,51,.35);color:var(--bad)}
+    .section{margin-top:16px;display:flex;flex-direction:column;gap:12px}
+    .mini,.wf,.list,.group{
+      border:0;
+      border-radius:16px;
+      background:#f7f7fa;
+      padding:14px;
+    }
+    .mini{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:8px;
+    }
+    .mini b{font-size:11px}
+    .mini span{font-size:11px;color:var(--muted)}
+    .wf{display:flex;flex-direction:column;gap:10px}
+    .wf-row{display:grid;grid-template-columns:210px 1fr 130px;gap:10px;align-items:center}
+    @media (max-width:620px){.wf-row{grid-template-columns:1fr}}
+    .wf-label{font-size:11px;color:var(--muted)}
+    .bar{
+      height:10px;
+      border-radius:999px;
+      border:0;
+      background:#f2f2f7;
+      overflow:hidden;
+    }
+    .fill{
+      height:100%;
+      width:0%;
+      transition:width .28s ease;
+      background:#7fb5ee;
+    }
+    .fill.neg{background:#e28f88}
+    .wf-val{font-size:11px;text-align:right;font-variant-numeric:tabular-nums}
+    .list .note{margin-top:8px}
+    .controls{display:flex;flex-direction:column;gap:14px}
+    .gt{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:8px;
+      margin-bottom:10px;
+    }
+    .gt b{font-size:11px}
+    .gt span{font-size:11px;color:var(--muted)}
+    .toggleRow{display:flex;flex-wrap:wrap;gap:10px}
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:7px;
+      border:0;
+      border-radius:999px;
+      padding:8px 11px;
+      font-size:11px;
+      cursor:pointer;
+      user-select:none;
+      background:#fff;
+    }
+    .chip input{accent-color:var(--accent)}
+    .ctrl{
+      display:grid;
+      grid-template-columns:1fr 220px;
+      gap:12px;
+      align-items:center;
+      padding:10px 0;
+      border-top:1px solid rgba(0,0,0,.05);
+    }
+    .ctrl:first-of-type{border-top:none}
+    label{font-size:11px;display:flex;flex-direction:column;gap:4px}
+    label small{color:var(--muted)}
+    input[type="range"]{width:100%}
+    .pill{
+      border:0;
+      border-radius:12px;
+      background:#fff;
+      font-size:11px;
+      padding:9px 11px;
+      text-align:right;
+      font-variant-numeric:tabular-nums;
+    }
+    .rowItem{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:8px;
+      border-top:1px solid rgba(0,0,0,.05);
+      padding:10px 0;
+      font-size:11px;
+    }
+    .rowItem:first-of-type{border-top:none}
+    .rowItem .name{color:var(--text)}
+    .rowItem .meta{color:var(--muted)}
+    .impact{
+      border:0;
+      border-radius:999px;
+      padding:6px 9px;
+      font-size:11px;
+      white-space:nowrap;
+      background:#fff;
+      font-variant-numeric:tabular-nums;
+    }
+    .impact.good{border-color:rgba(29,143,78,.35);color:var(--good)}
+    .impact.bad{border-color:rgba(201,59,51,.35);color:var(--bad)}
+    .note{margin:0;color:var(--muted);font-size:11px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <div class="badge">IRPC • Annual GHG • Scope 1/2/3 • What-if</div>
+        <h1>IRPC GHG Dashboard</h1>
+        <p class="sub">Select year range, scenario, factor categories, and sliders. KPI cards, bridge view, and driver sensitivity update instantly.</p>
+      </div>
+      <div class="filters">
+        <select id="viewMode">
+          <option value="executive">View: Executive</option>
+          <option value="workshop">View: Workshop</option>
+          <option value="analysis">View: Analysis</option>
+        </select>
+        <select id="yearFrom"></select>
+        <select id="yearTo"></select>
+        <select id="scenario">
+          <option value="base">Scenario: Base</option>
+          <option value="compliance">Scenario: Compliance</option>
+          <option value="accelerated">Scenario: Accelerated</option>
+          <option value="stress">Scenario: Stress</option>
+        </select>
+        <input id="search" type="text" placeholder="Search factors: efficiency, renewable, logistics..." />
+        <select id="sortDrivers">
+          <option value="absdesc">Sort: |Impact| high -> low</option>
+          <option value="negdesc">Sort: Best abatement first</option>
+          <option value="posdesc">Sort: Emission increase first</option>
+          <option value="name">Sort: A -> Z</option>
+        </select>
+        <button class="primary" id="resetBtn">Reset to Scenario</button>
+        <button id="sampleBtn">Try Sample</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="card">
+        <div class="hd">
+          <h2 id="titleLeft">Executive Overview</h2>
+          <div class="hint" id="hintLeft">Baseline vs Adjusted</div>
+        </div>
+        <div class="bd">
+          <div class="kpis">
+            <div class="kpi">
+              <div class="t">Total GHG</div>
+              <div class="v" id="kpiTotal">-</div>
+              <div class="u">tCO2e / year</div>
+              <div class="row"><span>Base: <b id="baseTotal">-</b></span><span>Adjusted: <b id="adjTotal">-</b></span></div>
+              <div id="dTotal" class="delta">Delta -</div>
+            </div>
+            <div class="kpi">
+              <div class="t">Scope Split</div>
+              <div class="v" id="kpiSplit">-</div>
+              <div class="u">S1 / S2 / S3</div>
+              <div class="row"><span>Base S1+S2: <b id="base12">-</b></span><span>Adj S1+S2: <b id="adj12">-</b></span></div>
+              <div id="d12" class="delta">Delta -</div>
+            </div>
+            <div class="kpi">
+              <div class="t">GHG Intensity</div>
+              <div class="v" id="kpiInt">-</div>
+              <div class="u">tCO2e / ton product</div>
+              <div class="row"><span>Production: <b id="outProd">-</b></span><span>Base: <b id="baseInt">-</b></span></div>
+              <div id="dInt" class="delta">Delta -</div>
+            </div>
+            <div class="kpi">
+              <div class="t">Gap to Target</div>
+              <div class="v" id="kpiGap">-</div>
+              <div class="u">Adjusted - Target</div>
+              <div class="row"><span>Target: <b id="targetV">-</b></span><span>Adjusted: <b id="adjV">-</b></span></div>
+              <div id="dGap" class="delta">Status -</div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="mini">
+              <div><b>Emissions Bridge</b><br /><span>Base -> Impact -> Adjusted</span></div>
+              <span id="yearLabel">Year(s): -</span>
+            </div>
+            <div class="wf">
+              <div class="wf-row">
+                <div class="wf-label">Base Emissions</div>
+                <div class="bar"><div class="fill" id="wfBase"></div></div>
+                <div class="wf-val" id="wfBaseVal">-</div>
+              </div>
+              <div class="wf-row">
+                <div class="wf-label">Net Impact (Selected Factors)</div>
+                <div class="bar"><div class="fill" id="wfImpact"></div></div>
+                <div class="wf-val" id="wfImpactVal">-</div>
+              </div>
+              <div class="wf-row">
+                <div class="wf-label">Adjusted Emissions</div>
+                <div class="bar"><div class="fill" id="wfAdj"></div></div>
+                <div class="wf-val" id="wfAdjVal">-</div>
+              </div>
+            </div>
+
+            <div class="list">
+              <div class="mini" style="margin-bottom:8px">
+                <div><b>Top Drivers</b><br /><span>Based on filter/search/sort</span></div>
+                <span class="hint">Top 10 factors</span>
+              </div>
+              <div id="drivers"></div>
+              <p class="note">Negative impact means abatement. Positive impact means emissions increase.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="card">
+        <div class="hd">
+          <h2>Filters & Controls</h2>
+          <div class="hint">Category toggles affect total impact</div>
+        </div>
+        <div class="bd">
+          <div class="controls">
+            <div class="group">
+              <div class="gt"><b>Base Inputs (Annual)</b><span>Editable</span></div>
+              <div class="ctrl">
+                <label>Base Scope 1 (tCO2e)<small>Direct emissions</small></label>
+                <input class="pill" id="inS1" type="number" value="1450000" step="5000" />
+              </div>
+              <div class="ctrl">
+                <label>Base Scope 2 (tCO2e)<small>Purchased electricity</small></label>
+                <input class="pill" id="inS2" type="number" value="580000" step="5000" />
+              </div>
+              <div class="ctrl">
+                <label>Base Scope 3 (tCO2e)<small>Value chain emissions</small></label>
+                <input class="pill" id="inS3" type="number" value="3100000" step="10000" />
+              </div>
+              <div class="ctrl">
+                <label>Production Volume (ton/year)<small>Used for intensity</small></label>
+                <input class="pill" id="inProd" type="number" value="6200000" step="25000" />
+              </div>
+              <div class="ctrl">
+                <label>Target Emissions (tCO2e)<small>Corporate target for selected period</small></label>
+                <input class="pill" id="inTarget" type="number" value="4300000" step="10000" />
+              </div>
+            </div>
+
+            <div class="group">
+              <div class="gt"><b>Factor Category Filters</b><span>On / Off</span></div>
+              <div class="toggleRow">
+                <label class="chip"><input type="checkbox" id="fOps" checked /> Operations</label>
+                <label class="chip"><input type="checkbox" id="fEnergy" checked /> Energy & Utility</label>
+                <label class="chip"><input type="checkbox" id="fSupply" checked /> Supply Chain</label>
+                <label class="chip"><input type="checkbox" id="fPolicy" checked /> Policy & Market</label>
+                <label class="chip"><input type="checkbox" id="fProject" checked /> Projects</label>
+              </div>
+              <p class="note" style="margin-top:10px">Disabled categories are excluded from net impact and top driver list.</p>
+            </div>
+
+            <div class="group">
+              <div class="gt"><b>Factor Sliders</b><span>Impact to total GHG (tCO2e)</span></div>
+              <div id="slidersHost"></div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    const FACTORS = [
+      {id:"flare", name:"Flaring Reduction Program", group:"ops", min:-220000, max:120000, value:0, hint:"flare gas management"},
+      {id:"boiler", name:"Boiler Efficiency Upgrade", group:"ops", min:-180000, max:90000, value:0, hint:"combustion efficiency"},
+      {id:"steam", name:"Steam System Loss", group:"energy", min:-60000, max:150000, value:0, hint:"positive means higher losses"},
+      {id:"renewable", name:"Renewable Electricity Share", group:"energy", min:-260000, max:50000, value:0, hint:"REC/PPA coverage"},
+      {id:"gridef", name:"Grid Emission Factor Shift", group:"energy", min:-110000, max:110000, value:0, hint:"grid factor movement"},
+      {id:"feedmix", name:"Low-carbon Feedstock Mix", group:"supply", min:-200000, max:120000, value:0, hint:"bio/recycled share"},
+      {id:"logi", name:"Logistics Optimization", group:"supply", min:-130000, max:50000, value:0, hint:"route/mode shift"},
+      {id:"cbam", name:"CBAM / Policy Pass-through", group:"policy", min:-70000, max:150000, value:0, hint:"policy response"},
+      {id:"methane", name:"Methane Leak Program", group:"project", min:-190000, max:40000, value:0, hint:"LDAR maturity"},
+      {id:"ccus", name:"CCUS Ramp-up", group:"project", min:-320000, max:20000, value:0, hint:"capture and storage"}
+    ];
+
+    const PRESETS = {
+      base: {
+        flare:0, boiler:0, steam:0, renewable:0, gridef:0,
+        feedmix:0, logi:0, cbam:0, methane:0, ccus:0
+      },
+      compliance: {
+        flare:-70000, boiler:-50000, steam:15000, renewable:-90000, gridef:-25000,
+        feedmix:-40000, logi:-25000, cbam:20000, methane:-45000, ccus:-50000
+      },
+      accelerated: {
+        flare:-120000, boiler:-85000, steam:-10000, renewable:-170000, gridef:-45000,
+        feedmix:-110000, logi:-60000, cbam:10000, methane:-120000, ccus:-180000
+      },
+      stress: {
+        flare:40000, boiler:25000, steam:90000, renewable:-30000, gridef:55000,
+        feedmix:70000, logi:35000, cbam:90000, methane:15000, ccus:-20000
+      }
+    };
+
+    const el = (id) => document.getElementById(id);
+    const fmt = (n) => Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    const sign = (n) => (n > 0 ? "+" : "") + fmt(n);
+    const fmt2 = (n) => (Number.isFinite(n) ? n.toFixed(3) : "0.000");
+
+    const yearFrom = el("yearFrom");
+    const yearTo = el("yearTo");
+    const viewMode = el("viewMode");
+    const scenario = el("scenario");
+    const resetBtn = el("resetBtn");
+    const sampleBtn = el("sampleBtn");
+    const search = el("search");
+    const sortDrivers = el("sortDrivers");
+
+    const fOps = el("fOps");
+    const fEnergy = el("fEnergy");
+    const fSupply = el("fSupply");
+    const fPolicy = el("fPolicy");
+    const fProject = el("fProject");
+
+    const inS1 = el("inS1");
+    const inS2 = el("inS2");
+    const inS3 = el("inS3");
+    const inProd = el("inProd");
+    const inTarget = el("inTarget");
+
+    const titleLeft = el("titleLeft");
+    const hintLeft = el("hintLeft");
+    const yearLabel = el("yearLabel");
+
+    const out = {
+      kpiTotal: el("kpiTotal"),
+      baseTotal: el("baseTotal"),
+      adjTotal: el("adjTotal"),
+      dTotal: el("dTotal"),
+      kpiSplit: el("kpiSplit"),
+      base12: el("base12"),
+      adj12: el("adj12"),
+      d12: el("d12"),
+      kpiInt: el("kpiInt"),
+      outProd: el("outProd"),
+      baseInt: el("baseInt"),
+      dInt: el("dInt"),
+      kpiGap: el("kpiGap"),
+      targetV: el("targetV"),
+      adjV: el("adjV"),
+      dGap: el("dGap"),
+      wfBase: el("wfBase"),
+      wfImpact: el("wfImpact"),
+      wfAdj: el("wfAdj"),
+      wfBaseVal: el("wfBaseVal"),
+      wfImpactVal: el("wfImpactVal"),
+      wfAdjVal: el("wfAdjVal"),
+      drivers: el("drivers"),
+      slidersHost: el("slidersHost")
+    };
+
+    (function initYears(){
+      const years = [2023,2024,2025,2026,2027,2028,2029,2030,2031,2032];
+      years.forEach(y=>{
+        const o1 = document.createElement("option");
+        o1.value = y;
+        o1.textContent = "From: " + y;
+        yearFrom.appendChild(o1);
+
+        const o2 = document.createElement("option");
+        o2.value = y;
+        o2.textContent = "To: " + y;
+        yearTo.appendChild(o2);
+      });
+      yearFrom.value = 2026;
+      yearTo.value = 2028;
+      yearLabel.textContent = "Year(s): " + yearFrom.value + "-" + yearTo.value;
+    })();
+
+    function buildSliders(){
+      out.slidersHost.innerHTML = "";
+      FACTORS.forEach((f)=>{
+        const wrap = document.createElement("div");
+        wrap.className = "ctrl";
+
+        const lab = document.createElement("label");
+        lab.innerHTML = f.name + " <small>" + f.hint + "</small>";
+
+        const right = document.createElement("div");
+        const r = document.createElement("input");
+        r.type = "range";
+        r.min = f.min;
+        r.max = f.max;
+        r.value = f.value;
+        r.id = "s_" + f.id;
+
+        const pill = document.createElement("div");
+        pill.className = "pill";
+        pill.id = "v_" + f.id;
+        pill.textContent = sign(f.value) + " tCO2e";
+
+        r.addEventListener("input", ()=>{
+          f.value = Number(r.value);
+          pill.textContent = sign(f.value) + " tCO2e";
+          recalc();
+        });
+
+        right.appendChild(r);
+        right.appendChild(pill);
+        wrap.appendChild(lab);
+        wrap.appendChild(right);
+        out.slidersHost.appendChild(wrap);
+      });
+    }
+
+    function groupEnabled(group){
+      if(group === "ops") return fOps.checked;
+      if(group === "energy") return fEnergy.checked;
+      if(group === "supply") return fSupply.checked;
+      if(group === "policy") return fPolicy.checked;
+      if(group === "project") return fProject.checked;
+      return true;
+    }
+
+    function getFilteredFactors(){
+      const q = (search.value || "").trim().toLowerCase();
+      let arr = FACTORS.filter(f => groupEnabled(f.group));
+      if(q){
+        arr = arr.filter(f => (f.name + " " + f.hint + " " + f.group).toLowerCase().includes(q));
+      }
+      const mode = sortDrivers.value;
+      if(mode === "absdesc") arr.sort((a,b)=>Math.abs(b.value)-Math.abs(a.value));
+      if(mode === "negdesc") arr.sort((a,b)=>a.value-b.value);
+      if(mode === "posdesc") arr.sort((a,b)=>b.value-a.value);
+      if(mode === "name") arr.sort((a,b)=>a.name.localeCompare(b.name, "en"));
+      return arr;
+    }
+
+    function paintDelta(node, d, lowerIsBetter){
+      node.textContent = "Delta " + sign(d);
+      node.classList.remove("good","bad");
+      const isGood = lowerIsBetter ? d <= 0 : d >= 0;
+      node.classList.add(isGood ? "good" : "bad");
+    }
+
+    function recalc(){
+      yearLabel.textContent = "Year(s): " + yearFrom.value + "-" + yearTo.value;
+      const vm = viewMode.value;
+      if(vm === "executive"){
+        titleLeft.textContent = "Executive Overview";
+        hintLeft.textContent = "KPI + Bridge + Top Drivers";
+      }
+      if(vm === "workshop"){
+        titleLeft.textContent = "Workshop View";
+        hintLeft.textContent = "Scenario and slider trade-off testing";
+      }
+      if(vm === "analysis"){
+        titleLeft.textContent = "Analysis View";
+        hintLeft.textContent = "Filter/search/sort sensitivity exploration";
+      }
+
+      const s1 = Number(inS1.value || 0);
+      const s2 = Number(inS2.value || 0);
+      const s3 = Number(inS3.value || 0);
+      const prod = Math.max(Number(inProd.value || 1), 1);
+      const target = Number(inTarget.value || 0);
+
+      const baseTotal = s1 + s2 + s3;
+      const selected = getFilteredFactors();
+      const impact = selected.reduce((sum, f)=>sum + (Number(f.value) || 0), 0);
+      const adjTotal = Math.max(baseTotal + impact, 0);
+
+      const reductionRatio = baseTotal > 0 ? Math.max(Math.min((baseTotal - adjTotal) / baseTotal, 1), -1) : 0;
+      const adjS1 = Math.max(s1 * (1 - reductionRatio * 0.6), 0);
+      const adjS2 = Math.max(s2 * (1 - reductionRatio * 0.9), 0);
+      const partial = adjS1 + adjS2;
+      const adjS3 = Math.max(adjTotal - partial, 0);
+
+      const baseIntensity = baseTotal / prod;
+      const adjIntensity = adjTotal / prod;
+      const gap = adjTotal - target;
+
+      out.kpiTotal.textContent = fmt(adjTotal);
+      out.baseTotal.textContent = fmt(baseTotal);
+      out.adjTotal.textContent = fmt(adjTotal);
+      paintDelta(out.dTotal, adjTotal - baseTotal, true);
+
+      out.kpiSplit.textContent = fmt(adjS1) + " / " + fmt(adjS2) + " / " + fmt(adjS3);
+      out.base12.textContent = fmt(s1 + s2);
+      out.adj12.textContent = fmt(adjS1 + adjS2);
+      paintDelta(out.d12, (adjS1 + adjS2) - (s1 + s2), true);
+
+      out.kpiInt.textContent = fmt2(adjIntensity);
+      out.outProd.textContent = fmt(prod) + " ton";
+      out.baseInt.textContent = fmt2(baseIntensity);
+      paintDelta(out.dInt, adjIntensity - baseIntensity, true);
+
+      out.kpiGap.textContent = sign(gap);
+      out.targetV.textContent = fmt(target);
+      out.adjV.textContent = fmt(adjTotal);
+      out.dGap.textContent = gap <= 0 ? "On/Below Target" : "Above Target";
+      out.dGap.classList.remove("good","bad");
+      out.dGap.classList.add(gap <= 0 ? "good" : "bad");
+
+      const maxAbs = Math.max(Math.abs(baseTotal), Math.abs(adjTotal), Math.abs(impact), 1);
+      out.wfBase.style.width = Math.min(100, Math.abs(baseTotal) / maxAbs * 100) + "%";
+      out.wfImpact.style.width = Math.min(100, Math.abs(impact) / maxAbs * 100) + "%";
+      out.wfAdj.style.width = Math.min(100, Math.abs(adjTotal) / maxAbs * 100) + "%";
+      out.wfImpact.classList.toggle("neg", impact > 0);
+
+      out.wfBaseVal.textContent = fmt(baseTotal) + " tCO2e";
+      out.wfImpactVal.textContent = sign(impact) + " tCO2e";
+      out.wfAdjVal.textContent = fmt(adjTotal) + " tCO2e";
+
+      const top = selected.slice(0,10);
+      out.drivers.innerHTML = "";
+      if(top.length === 0){
+        out.drivers.innerHTML = "<p class='note'>No factors found with current filter/search.</p>";
+      } else {
+        top.forEach(f=>{
+          const row = document.createElement("div");
+          row.className = "rowItem";
+          const left = document.createElement("div");
+          left.innerHTML = "<div class='name'>" + f.name + "</div><div class='meta'>" + f.group.toUpperCase() + " • " + f.hint + "</div>";
+          const badge = document.createElement("div");
+          badge.className = "impact " + (f.value <= 0 ? "good" : "bad");
+          badge.textContent = sign(f.value) + " tCO2e";
+          row.appendChild(left);
+          row.appendChild(badge);
+          out.drivers.appendChild(row);
+        });
+      }
+    }
+
+    function applyPreset(key){
+      const preset = PRESETS[key] || PRESETS.base;
+      FACTORS.forEach(f=>{
+        f.value = Number(preset[f.id] ?? 0);
+        const slider = el("s_" + f.id);
+        const pill = el("v_" + f.id);
+        if(slider) slider.value = f.value;
+        if(pill) pill.textContent = sign(f.value) + " tCO2e";
+      });
+      recalc();
+    }
+
+    function normalizeYears(){
+      if(Number(yearFrom.value) > Number(yearTo.value)){
+        const t = yearFrom.value;
+        yearFrom.value = yearTo.value;
+        yearTo.value = t;
+      }
+      recalc();
+    }
+
+    [yearFrom, yearTo, viewMode, scenario, search, sortDrivers, fOps, fEnergy, fSupply, fPolicy, fProject].forEach(node=>{
+      node.addEventListener("input", recalc);
+      node.addEventListener("change", recalc);
+    });
+    [inS1, inS2, inS3, inProd, inTarget].forEach(node=>node.addEventListener("input", recalc));
+    scenario.addEventListener("change", ()=>applyPreset(scenario.value));
+    resetBtn.addEventListener("click", ()=>applyPreset(scenario.value));
+    sampleBtn.addEventListener("click", ()=>{
+      FACTORS.forEach(f=>{
+        const r = f.min + Math.random() * (f.max - f.min);
+        f.value = Math.round(r * 0.55);
+        const s = el("s_" + f.id);
+        const p = el("v_" + f.id);
+        if(s) s.value = f.value;
+        if(p) p.textContent = sign(f.value) + " tCO2e";
+      });
+      recalc();
+    });
+    yearFrom.addEventListener("change", normalizeYears);
+    yearTo.addEventListener("change", normalizeYears);
+
+    buildSliders();
+    applyPreset("base");
+  </script>
+</body>
+</html>
