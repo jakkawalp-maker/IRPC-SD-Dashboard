@@ -5,7 +5,10 @@ const el = (id) => document.getElementById(id);
 const fmt = (n) => Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 const sign = (n) => (n > 0 ? "+" : "") + fmt(n);
 const fmt2 = (n) => (Number.isFinite(n) ? n.toFixed(3) : "0.000");
-const fmtMt = (n) => (Number.isFinite(n) ? (n / 1000000).toFixed(2) : "0.00");
+const tonsToMt = (n) => n / 1000000;
+const mtToTons = (n) => n * 1000000;
+const fmtMt = (n, digits = 2) => (Number.isFinite(n) ? tonsToMt(n).toFixed(digits) : (0).toFixed(digits));
+const signMt = (n, digits = 2) => (n > 0 ? "+" : "") + fmtMt(n, digits);
 
 const state = {
   years: [],
@@ -172,11 +175,11 @@ function rebuildYearsPreserveSelection() {
 }
 
 function setBaseInputs(baseInputs) {
-  refs.inS1.value = baseInputs.s1 ?? 1450000;
-  refs.inS2.value = baseInputs.s2 ?? 580000;
-  refs.inS3.value = baseInputs.s3 ?? 3100000;
+  refs.inS1.value = fmtMt(baseInputs.s1 ?? 1450000, 2);
+  refs.inS2.value = fmtMt(baseInputs.s2 ?? 580000, 2);
+  refs.inS3.value = fmtMt(baseInputs.s3 ?? 3100000, 2);
   refs.inProd.value = baseInputs.production ?? 6200000;
-  refs.inTarget.value = baseInputs.target ?? 4300000;
+  refs.inTarget.value = fmtMt(baseInputs.target ?? 4300000, 2);
 }
 
 function buildSliders() {
@@ -199,11 +202,11 @@ function buildSliders() {
     const pill = document.createElement("div");
     pill.className = "pill";
     pill.id = `v_${f.id}`;
-    pill.textContent = `${sign(f.value)} tCO2e`;
+    pill.textContent = `${signMt(f.value, 3)} MtCO2`;
 
     r.addEventListener("input", () => {
       f.value = Number(r.value);
-      pill.textContent = `${sign(f.value)} tCO2e`;
+      pill.textContent = `${signMt(f.value, 3)} MtCO2`;
       recalc();
     });
 
@@ -273,7 +276,7 @@ function applyPreset(key) {
     const slider = el(`s_${f.id}`);
     const pill = el(`v_${f.id}`);
     if (slider) slider.value = f.value;
-    if (pill) pill.textContent = `${sign(f.value)} tCO2e`;
+    if (pill) pill.textContent = `${signMt(f.value, 3)} MtCO2`;
   });
   recalc();
 }
@@ -285,7 +288,7 @@ function applySample() {
     const s = el(`s_${f.id}`);
     const p = el(`v_${f.id}`);
     if (s) s.value = f.value;
-    if (p) p.textContent = `${sign(f.value)} tCO2e`;
+    if (p) p.textContent = `${signMt(f.value, 3)} MtCO2`;
   });
   recalc();
 }
@@ -314,8 +317,8 @@ function getFilteredFactors() {
   return arr;
 }
 
-function paintDelta(node, d, lowerIsBetter) {
-  node.textContent = `Delta ${sign(d)}`;
+function paintDelta(node, d, lowerIsBetter, formatter = sign) {
+  node.textContent = `Delta ${formatter(d)}`;
   node.classList.remove("good", "bad");
   const isGood = lowerIsBetter ? d <= 0 : d >= 0;
   node.classList.add(isGood ? "good" : "bad");
@@ -337,11 +340,11 @@ function recalc() {
     refs.hintLeft.textContent = "Filter/search/sort sensitivity exploration";
   }
 
-  const s1 = Number(refs.inS1.value || 0);
-  const s2 = Number(refs.inS2.value || 0);
-  const s3 = Number(refs.inS3.value || 0);
+  const s1 = mtToTons(Number(refs.inS1.value || 0));
+  const s2 = mtToTons(Number(refs.inS2.value || 0));
+  const s3 = mtToTons(Number(refs.inS3.value || 0));
   const prod = Math.max(Number(refs.inProd.value || 1), 1);
-  const target = Number(refs.inTarget.value || 0);
+  const target = mtToTons(Number(refs.inTarget.value || 0));
 
   const baseTotal = s1 + s2 + s3;
   const selected = getFilteredFactors();
@@ -358,24 +361,24 @@ function recalc() {
   const adjIntensity = adjTotal / prod;
   const gap = adjTotal - target;
 
-  refs.kpiTotal.textContent = fmt(adjTotal);
-  refs.baseTotal.textContent = fmt(baseTotal);
-  refs.adjTotal.textContent = fmt(adjTotal);
-  paintDelta(refs.dTotal, adjTotal - baseTotal, true);
+  refs.kpiTotal.textContent = fmtMt(adjTotal);
+  refs.baseTotal.textContent = fmtMt(baseTotal);
+  refs.adjTotal.textContent = fmtMt(adjTotal);
+  paintDelta(refs.dTotal, adjTotal - baseTotal, true, (n) => signMt(n, 3));
 
   refs.kpiSplit.textContent = `${fmtMt(adjS1)} / ${fmtMt(adjS2)} / ${fmtMt(adjS3)}`;
   refs.base12.textContent = fmtMt(s1 + s2);
   refs.adj12.textContent = fmtMt(adjS1 + adjS2);
-  paintDelta(refs.d12, adjS1 + adjS2 - (s1 + s2), true);
+  paintDelta(refs.d12, adjS1 + adjS2 - (s1 + s2), true, (n) => signMt(n, 3));
 
   refs.kpiInt.textContent = fmt2(adjIntensity);
   refs.outProd.textContent = `${fmt(prod)} ton`;
   refs.baseInt.textContent = fmt2(baseIntensity);
   paintDelta(refs.dInt, adjIntensity - baseIntensity, true);
 
-  refs.kpiGap.textContent = sign(gap);
-  refs.targetV.textContent = fmt(target);
-  refs.adjV.textContent = fmt(adjTotal);
+  refs.kpiGap.textContent = signMt(gap);
+  refs.targetV.textContent = fmtMt(target);
+  refs.adjV.textContent = fmtMt(adjTotal);
   refs.dGap.textContent = gap <= 0 ? "On/Below Target" : "Above Target";
   refs.dGap.classList.remove("good", "bad");
   refs.dGap.classList.add(gap <= 0 ? "good" : "bad");
@@ -386,9 +389,9 @@ function recalc() {
   refs.wfAdj.style.width = `${Math.min(100, (Math.abs(adjTotal) / maxAbs) * 100)}%`;
   refs.wfImpact.classList.toggle("neg", impact > 0);
 
-  refs.wfBaseVal.textContent = `${fmt(baseTotal)} tCO2e`;
-  refs.wfImpactVal.textContent = `${sign(impact)} tCO2e`;
-  refs.wfAdjVal.textContent = `${fmt(adjTotal)} tCO2e`;
+  refs.wfBaseVal.textContent = `${fmtMt(baseTotal)} MtCO2`;
+  refs.wfImpactVal.textContent = `${signMt(impact, 3)} MtCO2`;
+  refs.wfAdjVal.textContent = `${fmtMt(adjTotal)} MtCO2`;
 
   renderDrivers(selected);
   renderTrend(baseTotal, impact);
@@ -409,7 +412,7 @@ function renderDrivers(selectedFactors) {
     left.innerHTML = `<div class='name'>${f.name}</div><div class='meta'>${f.group.toUpperCase()} • ${f.hint}</div>`;
     const badge = document.createElement("div");
     badge.className = `impact ${f.value <= 0 ? "good" : "bad"}`;
-    badge.textContent = `${sign(f.value)} tCO2e`;
+    badge.textContent = `${signMt(f.value, 3)} MtCO2`;
     row.appendChild(left);
     row.appendChild(badge);
     refs.drivers.appendChild(row);
@@ -457,7 +460,7 @@ function renderTrend(currentBase, currentImpact) {
     const value = minV + ((yTicks - idx) / yTicks) * range;
     const y = yForValue(value);
     return `<line class="trend-grid" x1="${padLeft}" y1="${y}" x2="${width - padRight}" y2="${y}" />
-      <text class="trend-label" x="6" y="${y + 4}">${fmt(value / 1000)}k</text>`;
+      <text class="trend-label" x="6" y="${y + 4}">${fmtMt(value, 1)} Mt</text>`;
   }).join("\n");
 
   const xLabels = trend.map((d, i) => {
@@ -483,7 +486,7 @@ function renderTrend(currentBase, currentImpact) {
   if (selected.length > 0) {
     const avgBase = selected.reduce((s, d) => s + d.base, 0) / selected.length;
     const avgAdj = selected.reduce((s, d) => s + d.adjusted, 0) / selected.length;
-    refs.trendSummary.textContent = `Range avg: ${fmt(avgBase)} -> ${fmt(avgAdj)} tCO2e`;
+    refs.trendSummary.textContent = `Range avg: ${fmtMt(avgBase)} -> ${fmtMt(avgAdj)} MtCO2`;
   } else {
     refs.trendSummary.textContent = "-";
   }
@@ -520,14 +523,24 @@ function scenarioSnapshot() {
   };
 }
 
+function normalizeMtInputFromSnapshot(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return null;
+  return Math.abs(n) > 1000 ? tonsToMt(n) : n;
+}
+
 function applySnapshot(snapshot) {
   if (!snapshot) return;
 
-  refs.inS1.value = snapshot.inputs?.s1 ?? refs.inS1.value;
-  refs.inS2.value = snapshot.inputs?.s2 ?? refs.inS2.value;
-  refs.inS3.value = snapshot.inputs?.s3 ?? refs.inS3.value;
+  const s1 = normalizeMtInputFromSnapshot(snapshot.inputs?.s1);
+  const s2 = normalizeMtInputFromSnapshot(snapshot.inputs?.s2);
+  const s3 = normalizeMtInputFromSnapshot(snapshot.inputs?.s3);
+  const target = normalizeMtInputFromSnapshot(snapshot.inputs?.target);
+  if (s1 !== null) refs.inS1.value = s1;
+  if (s2 !== null) refs.inS2.value = s2;
+  if (s3 !== null) refs.inS3.value = s3;
   refs.inProd.value = snapshot.inputs?.production ?? refs.inProd.value;
-  refs.inTarget.value = snapshot.inputs?.target ?? refs.inTarget.value;
+  if (target !== null) refs.inTarget.value = target;
 
   if (snapshot.years?.from) refs.yearFrom.value = String(snapshot.years.from);
   if (snapshot.years?.to) refs.yearTo.value = String(snapshot.years.to);
@@ -551,7 +564,7 @@ function applySnapshot(snapshot) {
     const slider = el(`s_${f.id}`);
     const pill = el(`v_${f.id}`);
     if (slider) slider.value = f.value;
-    if (pill) pill.textContent = `${sign(f.value)} tCO2e`;
+    if (pill) pill.textContent = `${signMt(f.value, 3)} MtCO2`;
   });
 
   normalizeYears();
@@ -728,7 +741,9 @@ function parseTrendCsv(csvText) {
 
   let startIdx = 0;
   const first = rows[0].toLowerCase();
-  if (first.includes("year") && first.includes("base")) {
+  const isHeader = first.includes("year") && first.includes("base");
+  const isMtHeader = first.includes("mt");
+  if (isHeader) {
     startIdx = 1;
   }
 
@@ -737,8 +752,10 @@ function parseTrendCsv(csvText) {
     const parts = rows[i].split(",").map((x) => x.trim());
     if (parts.length < 2) continue;
     const year = Number(parts[0]);
-    const base = Number(parts[1]);
-    if (Number.isFinite(year) && Number.isFinite(base)) {
+    const raw = Number(parts[1]);
+    if (!Number.isFinite(year) || !Number.isFinite(raw)) continue;
+    const base = isMtHeader || Math.abs(raw) < 1000 ? mtToTons(raw) : raw;
+    if (Number.isFinite(base)) {
       output[year] = base;
     }
   }

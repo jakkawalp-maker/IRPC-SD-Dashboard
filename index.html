@@ -44,53 +44,78 @@
         <div class="bd">
           <div class="kpis">
             <div class="kpi">
-              <div class="t">Total GHG</div>
+              <div class="kpiHead">
+                <span class="kpiIcon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M12 3C8 3 5 6 5 10c0 5 7 11 7 11s7-6 7-11c0-4-3-7-7-7z" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="10" r="2.8" stroke="currentColor" stroke-width="1.7"/></svg>
+                </span>
+                <div class="t">Total GHG</div>
+              </div>
               <div class="v" id="kpiTotal">-</div>
-              <div class="u">tCO2e / year</div>
-              <div class="row"><span>Base: <b id="baseTotal">-</b></span><span>Adjusted: <b id="adjTotal">-</b></span></div>
+              <div class="u">MtCO2 / year</div>
+              <div class="row"><span>Base: <b id="baseTotal">-</b> MtCO2</span><span>Adjusted: <b id="adjTotal">-</b> MtCO2</span></div>
               <div id="dTotal" class="delta">Delta -</div>
             </div>
             <div class="kpi">
-              <div class="t">Scope Split</div>
+              <div class="kpiHead">
+                <span class="kpiIcon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M4 17h16M7 17V8m5 9V5m5 12v-7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                </span>
+                <div class="t">Scope Split</div>
+              </div>
               <div class="v" id="kpiSplit">-</div>
               <div class="u">S1 / S2 / S3 (MtCO2)</div>
               <div class="row"><span>Base S1+S2: <b id="base12">-</b> MtCO2</span><span>Adj S1+S2: <b id="adj12">-</b> MtCO2</span></div>
               <div id="d12" class="delta">Delta -</div>
             </div>
             <div class="kpi">
-              <div class="t">GHG Intensity</div>
+              <div class="kpiHead">
+                <span class="kpiIcon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M5 17l4-5 3 3 6-8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M18 7h3v3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                </span>
+                <div class="t">GHG Intensity</div>
+              </div>
               <div class="v" id="kpiInt">-</div>
               <div class="u">tCO2e / ton product</div>
               <div class="row"><span>Production: <b id="outProd">-</b></span><span>Base: <b id="baseInt">-</b></span></div>
               <div id="dInt" class="delta">Delta -</div>
             </div>
             <div class="kpi">
-              <div class="t">Gap to Target</div>
+              <div class="kpiHead">
+                <span class="kpiIcon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.7"/><path d="M12 12L16 9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/></svg>
+                </span>
+                <div class="t">Gap to Target</div>
+              </div>
               <div class="v" id="kpiGap">-</div>
-              <div class="u">Adjusted - Target</div>
-              <div class="row"><span>Target: <b id="targetV">-</b></span><span>Adjusted: <b id="adjV">-</b></span></div>
+              <div class="u">Adjusted - Target (MtCO2)</div>
+              <div class="row"><span>Target: <b id="targetV">-</b> MtCO2</span><span>Adjusted: <b id="adjV">-</b> MtCO2</span></div>
               <div id="dGap" class="delta">Status -</div>
             </div>
           </div>
 
           <div class="section">
             <div class="mini">
-              <div><b>Emissions Bridge</b><br /><span>Base -> Impact -> Adjusted</span></div>
+              <div class="titleWithIcon">
+                <span class="miniIcon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M4 16h4l2-5 3 7 2-4h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <div><b>Emissions Bridge</b><br /><span>Base -> Impact -> Adjusted</span></div>
+              </div>
               <span id="yearLabel">Year(s): -</span>
             </div>
             <div class="wf">
               <div class="wf-row">
-                <div class="wf-label">Base Emissions</div>
+                <div class="wf-label">Base Emissions (MtCO2)</div>
                 <div class="bar"><div class="fill" id="wfBase"></div></div>
                 <div class="wf-val" id="wfBaseVal">-</div>
               </div>
               <div class="wf-row">
-                <div class="wf-label">Net Impact (Selected Factors)</div>
+                <div class="wf-label">Net Impact (MtCO2)</div>
                 <div class="bar"><div class="fill" id="wfImpact"></div></div>
                 <div class="wf-val" id="wfImpactVal">-</div>
               </div>
               <div class="wf-row">
-                <div class="wf-label">Adjusted Emissions</div>
+                <div class="wf-label">Adjusted Emissions (MtCO2)</div>
                 <div class="bar"><div class="fill" id="wfAdj"></div></div>
                 <div class="wf-val" id="wfAdjVal">-</div>
               </div>
@@ -98,7 +123,12 @@
 
             <div class="trend">
               <div class="mini" style="margin-bottom:8px">
-                <div><b>Annual Trend</b><br /><span>Base vs Adjusted emissions by year</span></div>
+                <div class="titleWithIcon">
+                  <span class="miniIcon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M4 17V7m0 10h16M7 14l3-3 3 2 4-5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </span>
+                  <div><b>Annual Trend</b><br /><span>Base vs Adjusted emissions by year</span></div>
+                </div>
                 <span class="hint" id="trendSummary">-</span>
               </div>
               <svg id="trendSvg" viewBox="0 0 760 240" role="img" aria-label="Annual emissions trend chart"></svg>
@@ -106,7 +136,12 @@
 
             <div class="list">
               <div class="mini" style="margin-bottom:8px">
-                <div><b>Top Drivers</b><br /><span>Based on filter/search/sort</span></div>
+                <div class="titleWithIcon">
+                  <span class="miniIcon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M5 18h14M7 15h10M9 12h6M11 9h2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                  </span>
+                  <div><b>Top Drivers</b><br /><span>Based on filter/search/sort</span></div>
+                </div>
                 <span class="hint">Top 10 factors</span>
               </div>
               <div id="drivers"></div>
@@ -126,24 +161,24 @@
             <div class="group">
               <div class="gt"><b>Base Inputs (Annual)</b><span>Editable</span></div>
               <div class="ctrl">
-                <label>Base Scope 1 (tCO2e)<small>Direct emissions</small></label>
-                <input class="pill" id="inS1" type="number" step="5000" />
+                <label>Base Scope 1 (MtCO2)<small>Direct emissions</small></label>
+                <input class="pill" id="inS1" type="number" step="0.01" />
               </div>
               <div class="ctrl">
-                <label>Base Scope 2 (tCO2e)<small>Purchased electricity</small></label>
-                <input class="pill" id="inS2" type="number" step="5000" />
+                <label>Base Scope 2 (MtCO2)<small>Purchased electricity</small></label>
+                <input class="pill" id="inS2" type="number" step="0.01" />
               </div>
               <div class="ctrl">
-                <label>Base Scope 3 (tCO2e)<small>Value chain emissions</small></label>
-                <input class="pill" id="inS3" type="number" step="10000" />
+                <label>Base Scope 3 (MtCO2)<small>Value chain emissions</small></label>
+                <input class="pill" id="inS3" type="number" step="0.01" />
               </div>
               <div class="ctrl">
                 <label>Production Volume (ton/year)<small>Used for intensity</small></label>
                 <input class="pill" id="inProd" type="number" step="25000" />
               </div>
               <div class="ctrl">
-                <label>Target Emissions (tCO2e)<small>Corporate target for selected period</small></label>
-                <input class="pill" id="inTarget" type="number" step="10000" />
+                <label>Target Emissions (MtCO2)<small>Corporate target for selected period</small></label>
+                <input class="pill" id="inTarget" type="number" step="0.01" />
               </div>
             </div>
 
@@ -173,7 +208,7 @@
                 <button id="resetCsvBtn">Reset Trend Data</button>
                 <input id="csvImportFile" type="file" accept=".csv,text/csv" hidden />
               </div>
-              <p class="note" id="csvHint" style="margin-top:8px">CSV format: <code>year,base_total</code>. Example: <code>2026,5130000</code></p>
+              <p class="note" id="csvHint" style="margin-top:8px">CSV format: <code>year,base_total_mt</code>. Example: <code>2026,5.13</code></p>
             </div>
 
             <div class="group">
@@ -189,7 +224,7 @@
             </div>
 
             <div class="group">
-              <div class="gt"><b>Factor Sliders</b><span>Impact to total GHG (tCO2e)</span></div>
+              <div class="gt"><b>Factor Sliders</b><span>Impact to total GHG (MtCO2)</span></div>
               <div id="slidersHost"></div>
             </div>
           </div>
